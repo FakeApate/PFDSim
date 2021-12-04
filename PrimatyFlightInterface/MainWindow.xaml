@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:PrimatyFlightInterface"
         x:Class="PrimatyFlightInterface.MainWindow"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800" Background="Black">
+        Title="MainWindow" Height="800" Width="800" Background="Black" ResizeMode="NoResize">
 
     <Grid x:Name="MainGrid" ShowGridLines="True">
         <Grid.ColumnDefinitions>
@@ -18,14 +18,11 @@
             <RowDefinition/>
             <RowDefinition Height="0.2*"/>
         </Grid.RowDefinitions>
-        <Rectangle HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="0" Grid.Column="1" RadiusY="30" RadiusX="30" StrokeThickness="19" Stroke="Black">
-            <Rectangle.Fill>
-                <LinearGradientBrush EndPoint="0,1" StartPoint="0,0" MappingMode="RelativeToBoundingBox" SpreadMethod="Pad">
-                    <GradientStop Color="#5b93c5" Offset="0.5"/>
-                    <GradientStop Color="#7d5233" Offset="0.5"/>
-                </LinearGradientBrush>
-            </Rectangle.Fill>
-        </Rectangle>
+        <Canvas x:Name="Horizon_Canvas" Grid.Column="1" Loaded="Horizon_Canvas_Loaded" Width="400" Height="400" Background="#5b93c5">
+
+        </Canvas>
+        <Slider x:Name="slider" Grid.Column="2" HorizontalAlignment="Stretch"  VerticalAlignment="Stretch" Width="120" Orientation="Vertical" Minimum="-360" Maximum="360" ValueChanged="Slider_ValueChanged" IsSnapToTickEnabled="True"/>
+        <Label Grid.Column="2" Content="{Binding Value, ElementName=slider}" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="White" FontSize="36"/>
 
     </Grid>
 </Window>
