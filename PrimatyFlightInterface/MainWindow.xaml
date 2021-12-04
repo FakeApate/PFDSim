@@ -19,10 +19,204 @@
             <RowDefinition Height="0.2*"/>
         </Grid.RowDefinitions>
         <Canvas x:Name="Horizon_Canvas" Grid.Column="1" Loaded="Horizon_Canvas_Loaded" Width="400" Height="400" Background="#5b93c5">
+            <Ellipse x:Name="DegArc" Grid.Column="1" HorizontalAlignment="Stretch" Height="300" VerticalAlignment="Stretch" Width="300" Margin="50,50,0,0" StrokeThickness="3" Panel.ZIndex="2">
+                <Ellipse.Stroke>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="White" Offset="0.33"/>
+                        <GradientStop Color="Transparent" Offset="0.33"/>
+                    </LinearGradientBrush>
+                </Ellipse.Stroke>
+            </Ellipse>
+            <Line StrokeThickness="3" X1="200" Y1="200" X2="200" Y2="25" RenderTransformOrigin="1,1" Panel.ZIndex="6">
+                <Line.Stroke>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="White" Offset="0.15"/>
+                        <GradientStop Color="Transparent" Offset="0.15"/>
+                    </LinearGradientBrush>
+                </Line.Stroke>
+            </Line>
+            <Line StrokeThickness="2" X1="200" Y1="200" X2="200" Y2="35" RenderTransformOrigin="1,1" Panel.ZIndex="6">
+                <Line.Stroke>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="White" Offset="0.10"/>
+                        <GradientStop Color="Transparent" Offset="0.10"/>
+                    </LinearGradientBrush>
+                </Line.Stroke>
+                <Line.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform Angle="-10"/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </Line.RenderTransform>
+            </Line>
+            <Line StrokeThickness="2" X1="200" Y1="200" X2="200" Y2="35" RenderTransformOrigin="1,1" Panel.ZIndex="6">
+                <Line.Stroke>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="White" Offset="0.10"/>
+                        <GradientStop Color="Transparent" Offset="0.10"/>
+                    </LinearGradientBrush>
+                </Line.Stroke>
+                <Line.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform Angle="10"/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </Line.RenderTransform>
+            </Line>
+            <Line StrokeThickness="2" X1="200" Y1="200" X2="200" Y2="35" RenderTransformOrigin="1,1" Panel.ZIndex="6">
+                <Line.Stroke>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="White" Offset="0.10"/>
+                        <GradientStop Color="Transparent" Offset="0.10"/>
+                    </LinearGradientBrush>
+                </Line.Stroke>
+                <Line.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform Angle="-20"/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </Line.RenderTransform>
+            </Line>
+            <Line StrokeThickness="2" X1="200" Y1="200" X2="200" Y2="35" RenderTransformOrigin="1,1" Panel.ZIndex="6">
+                <Line.Stroke>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="White" Offset="0.10"/>
+                        <GradientStop Color="Transparent" Offset="0.10"/>
+                    </LinearGradientBrush>
+                </Line.Stroke>
+                <Line.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform Angle="20"/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </Line.RenderTransform>
+            </Line>
+            <Line StrokeThickness="3" X1="200" Y1="200" X2="200" Y2="25" RenderTransformOrigin="1,1" Panel.ZIndex="6">
+                <Line.Stroke>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="White" Offset="0.15"/>
+                        <GradientStop Color="Transparent" Offset="0.15"/>
+                    </LinearGradientBrush>
+                </Line.Stroke>
+                <Line.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform Angle="-30"/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </Line.RenderTransform>
+            </Line>
+            <Line StrokeThickness="3" X1="200" Y1="200" X2="200" Y2="25" RenderTransformOrigin="1,1" Panel.ZIndex="6">
+                <Line.Stroke>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="White" Offset="0.15"/>
+                        <GradientStop Color="Transparent" Offset="0.15"/>
+                    </LinearGradientBrush>
+                </Line.Stroke>
+                <Line.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform Angle="30"/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </Line.RenderTransform>
+            </Line>
+            <Line StrokeThickness="2" X1="200" Y1="200" X2="200" Y2="35" RenderTransformOrigin="1,1" Panel.ZIndex="6">
+                <Line.Stroke>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="White" Offset="0.10"/>
+                        <GradientStop Color="Transparent" Offset="0.10"/>
+                    </LinearGradientBrush>
+                </Line.Stroke>
+                <Line.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform Angle="50"/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </Line.RenderTransform>
+            </Line>
+            <Line StrokeThickness="2" X1="200" Y1="200" X2="200" Y2="35" RenderTransformOrigin="1,1" Panel.ZIndex="6">
+                <Line.Stroke>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="White" Offset="0.10"/>
+                        <GradientStop Color="Transparent" Offset="0.10"/>
+                    </LinearGradientBrush>
+                </Line.Stroke>
+                <Line.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform Angle="-50"/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </Line.RenderTransform>
+            </Line>
+            <Line StrokeThickness="3" X1="200" Y1="200" X2="200" Y2="25" RenderTransformOrigin="1,1" Panel.ZIndex="6">
+                <Line.Stroke>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="White" Offset="0.15"/>
+                        <GradientStop Color="Transparent" Offset="0.15"/>
+                    </LinearGradientBrush>
+                </Line.Stroke>
+                <Line.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform Angle="-70"/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </Line.RenderTransform>
+            </Line>
+            <Line StrokeThickness="3" X1="200" Y1="200" X2="200" Y2="25" RenderTransformOrigin="1,1" Panel.ZIndex="6">
+                <Line.Stroke>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="White" Offset="0.16"/>
+                        <GradientStop Color="Transparent" Offset="0.16"/>
+                    </LinearGradientBrush>
+                </Line.Stroke>
+                <Line.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform Angle="70"/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </Line.RenderTransform>
+            </Line>
+            <Polygon x:Name="Arrow" Points="290,200 200,50, 110,200" RenderTransformOrigin="0.68965517241379310344827586206897,1" Panel.ZIndex="7"  >
+                <Polygon.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform Angle="0"/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </Polygon.RenderTransform>
+                <Polygon.Fill>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="Black" Offset="0.15"/>
+                        <GradientStop Color="Transparent" Offset="0.15"/>
+                    </LinearGradientBrush>
+                </Polygon.Fill>
 
+            </Polygon>
         </Canvas>
+        <Rectangle Height="410" Grid.Column="1" Stroke="Black" Width="410" StrokeThickness="10"/>
         <Slider x:Name="slider" Grid.Column="2" HorizontalAlignment="Stretch"  VerticalAlignment="Stretch" Width="120" Orientation="Vertical" Minimum="-360" Maximum="360" ValueChanged="Slider_ValueChanged" IsSnapToTickEnabled="True"/>
         <Label Grid.Column="2" Content="{Binding Value, ElementName=slider}" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="White" FontSize="36"/>
+
 
     </Grid>
 </Window>

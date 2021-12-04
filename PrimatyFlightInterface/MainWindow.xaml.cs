@@ -27,28 +27,21 @@ namespace PrimatyFlightInterface
         private Point EdgeTR = new Point(0, 0);
         private Point EdgeBL = new Point(0, 0);
         private Point EdgeBR = new Point(0, 0);
+        private Dictionary<Vector, List<Point>> groundRotation;
 
-        
+
         public MainWindow()
         {
             InitializeComponent();          
         }
-
-        private void drawingHorizon(Canvas canvas)
+        private void updateEdges()
         {
-            double radiant = (Math.PI / 180) * rotation;
+            EdgeTR.X = this.Horizon_Canvas.ActualWidth;
+            EdgeBL.Y = this.Horizon_Canvas.ActualHeight;
+            EdgeBR.X = this.Horizon_Canvas.ActualWidth;
+            EdgeBR.Y = this.Horizon_Canvas.ActualHeight;
 
-            horizon.Stroke = Brushes.White;
-            horizon.StrokeThickness = 5;
-            horizon.X1 = 0;
-            horizon.X2 = canvas.ActualWidth;
-
-            EdgeTR.X = canvas.ActualWidth;
-            EdgeBL.Y = canvas.ActualHeight;
-            EdgeBR.X = canvas.ActualWidth;
-            EdgeBR.Y = canvas.ActualHeight;
-
-            Dictionary<Vector, List<Point>> groundRotation = new Dictionary<Vector, List<Point>> {
+            groundRotation = new Dictionary<Vector, List<Point>> {
                 { new Vector(45,90),        new List<Point>{ EdgeTL, EdgeBL } },
                 { new Vector(91,134),       new List<Point>{ EdgeBL, EdgeTL } },
                 { new Vector(-90,-45),      new List<Point>{ EdgeBR, EdgeTR } },
@@ -57,81 +50,61 @@ namespace PrimatyFlightInterface
                 { new Vector(-180,-135),    new List<Point>{ EdgeTL, EdgeTR } },
                 { new Vector(-44,44),       new List<Point>{ EdgeBL, EdgeBR } },
             };
-
-            switch (rotation)
+        }
+        private void drawingHorizon(Canvas canvas)
+        {           
+            horizon.X1 = 0;
+            horizon.X2 = canvas.ActualWidth;
+            if (Math.Abs(rotation) == 90)
             {
-                case 90:
-                    horizon.X1 = canvas.ActualWidth / 2;
-                    horizon.X2 = canvas.ActualWidth / 2;
+                horizon.X1 = canvas.ActualWidth / 2;
+                horizon.X2 = canvas.ActualWidth / 2;
+                horizon.Y1 = rotation == 90 ? 0: canvas.ActualHeight;
+                horizon.Y2 = rotation == 90 ? canvas.ActualHeight : 0;
+            }
+            else if( Math.Abs(rotation) == 180)
+            {
+                horizon.X1 = 0;
+                horizon.X2 = canvas.ActualWidth;
+                horizon.Y1 = canvas.ActualHeight / 2;
+                horizon.Y2 = canvas.ActualHeight / 2;
+            }
+            else
+            {
+                double radiant = (Math.PI / 180) * rotation;
+                horizon.Y1 = Math.Tan(radiant * -1) * (canvas.ActualWidth / 2) + (canvas.ActualHeight / 2);
+                horizon.Y2 = Math.Tan(radiant) * (canvas.ActualWidth / 2) + (canvas.ActualHeight / 2);
+                if (horizon.Y1 < 0)
+                {
+                    double overflow = horizon.Y1;
                     horizon.Y1 = 0;
-                    horizon.Y2 = canvas.ActualHeight;
-                    break;
-                case -90:
-                    horizon.X1 = canvas.ActualWidth / 2;
-                    horizon.X2 = canvas.ActualWidth / 2;
+                    horizon.X1 = overflow / Math.Tan(radiant * -1);
+                }
+                else if (horizon.Y1 > canvas.ActualHeight)
+                {
+                    double overflow = horizon.Y1 - canvas.ActualHeight;
                     horizon.Y1 = canvas.ActualHeight;
+                    horizon.X1 = overflow / Math.Tan(radiant * -1);
+                }
+                if (horizon.Y2 < 0)
+                {
+                    double overflow = horizon.Y2;
                     horizon.Y2 = 0;
-                    break;
-
-                case 180:
-                    horizon.X1 = 0;
-                    horizon.X2 = canvas.ActualWidth;
-                    horizon.Y1 = canvas.ActualHeight / 2;
-                    horizon.Y2 = canvas.ActualHeight/2;
-                    break;
-                case -180:
-                    horizon.X1 = 0;
-                    horizon.X2 = canvas.ActualWidth;
-                    horizon.Y1 = canvas.ActualHeight / 2;
-                    horizon.Y2 = canvas.ActualHeight / 2;
-                    break;
-
-                default:
-                    horizon.Y1 = Math.Tan(radiant * -1) * (canvas.ActualWidth / 2) + (canvas.ActualHeight / 2);
-                    horizon.Y2 = Math.Tan(radiant) * (canvas.ActualWidth / 2) + (canvas.ActualHeight / 2);
-                    if (horizon.Y1 < 0)
-                    {
-                        double overflow = horizon.Y1;
-                        horizon.Y1 = 0;
-                        horizon.X1 = overflow / Math.Tan(radiant * -1);
-                    }
-                    else if (horizon.Y1 > canvas.ActualHeight)
-                    {
-                        double overflow = horizon.Y1 - canvas.ActualHeight;
-                        horizon.Y1 = canvas.ActualHeight;
-                        horizon.X1 = overflow / Math.Tan(radiant * -1);
-                    }
-                    if (horizon.Y2 < 0)
-                    {
-                        double overflow = horizon.Y2;
-                        horizon.Y2 = 0;
-                        horizon.X2 = canvas.ActualWidth - overflow / Math.Tan(radiant);
-                    }
-                    else if (horizon.Y2 > canvas.ActualHeight)
-                    {
-                        double overflow = horizon.Y2 - canvas.ActualHeight;
-                        horizon.Y2 = canvas.ActualHeight;
-                        horizon.X2 = canvas.ActualWidth - overflow / Math.Tan(radiant);
-                    }
-
-                   
-                   
-                    break;
+                    horizon.X2 = canvas.ActualWidth - overflow / Math.Tan(radiant);
+                }
+                else if (horizon.Y2 > canvas.ActualHeight)
+                {
+                    double overflow = horizon.Y2 - canvas.ActualHeight;
+                    horizon.Y2 = canvas.ActualHeight;
+                    horizon.X2 = canvas.ActualWidth - overflow / Math.Tan(radiant);
+                }
             }
 
-            ground.Points.Clear();
-            ground.Fill = new SolidColorBrush(Color.FromRgb(0x7d, 0x52, 0x33));
+            updateEdges();
+            ground.Points.Clear();            
             groundRotation[groundRotation.Keys.Single(x => rotation >= x.X && rotation <= x.Y)].ForEach(e => ground.Points.Add(e));
             ground.Points.Add(new Point(horizon.X2, horizon.Y2));
             ground.Points.Add(new Point(horizon.X1, horizon.Y1));
-
-
-
-
-
-
-
-
         }
 
         private void Horizon_Canvas_Loaded(object sender, RoutedEventArgs e)
@@ -139,11 +112,17 @@ namespace PrimatyFlightInterface
             drawingHorizon(this.Horizon_Canvas);
             Horizon_Canvas.Children.Add(horizon);
             Horizon_Canvas.Children.Add(ground);
+            horizon.Stroke = Brushes.White;
+            horizon.StrokeThickness = 5;
+            ground.Fill = new SolidColorBrush(Color.FromRgb(0x7d, 0x52, 0x33));
         }
 
         private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             this.rotation = e.NewValue;
+            
+            this.Arrow.RenderTransform = new RotateTransform(rotation);
+            
             if(rotation > 180)
             {
                  this.rotation = -180 + (rotation - 180);
@@ -156,5 +135,6 @@ namespace PrimatyFlightInterface
         }
     }
 
+    
     
 }
