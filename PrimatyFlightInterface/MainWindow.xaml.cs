@@ -32,7 +32,7 @@ namespace PrimatyFlightInterface
 
         public MainWindow()
         {
-            InitializeComponent();          
+            InitializeComponent();           
         }
         private void updateEdges()
         {
@@ -51,8 +51,48 @@ namespace PrimatyFlightInterface
                 { new Vector(-44,44),       new List<Point>{ EdgeBL, EdgeBR } },
             };
         }
-        private void drawingHorizon(Canvas canvas)
-        {           
+
+        private void updateCanvasSize()
+        {
+            double maxWidth  = this.MainGrid.ColumnDefinitions[1].ActualWidth;
+            double maxHeight = this.MainGrid.RowDefinitions[0].ActualHeight;
+
+            if(maxHeight > maxWidth)
+            {
+                this.Horizon_Canvas.Width = maxWidth;
+                this.Horizon_Canvas.Height = maxWidth;
+            }
+            else
+            {
+                this.Horizon_Canvas.Width = maxHeight;
+                this.Horizon_Canvas.Height = maxHeight;
+            }
+
+            this.DegArc.Width = this.Horizon_Canvas.Width * 0.75;
+            this.DegArc.Height = this.Horizon_Canvas.Height * 0.75;
+
+            double margin = (this.Horizon_Canvas.Width - this.DegArc.Width) / 2;
+            this.DegArc.Margin = new Thickness(margin, margin, 0, 0);
+            this.DegArcLine.X1 = this.Horizon_Canvas.Width / 2;
+            this.DegArcLine.X2 = this.Horizon_Canvas.Width / 2;
+            this.DegArcLine.Y1 = this.Horizon_Canvas.Height / 2;
+            this.DegArcLine.Y2 = (this.Horizon_Canvas.Height - (this.DegArc.Height)) / 4;
+            this.DegArcLineSmall.Y2 = this.DegArcLine.Y2 * 1.4;
+
+            Point p1 = new Point(this.Horizon_Canvas.Width * 0.25, this.Horizon_Canvas.Height/2);
+            Point p2 = new Point(this.Horizon_Canvas.Width / 2, this.Horizon_Canvas.Height / 8);
+            Point p3 = new Point(this.Horizon_Canvas.Width * 0.75, this.Horizon_Canvas.Height / 2);
+
+            this.Arrow.Points.Clear();
+            this.Arrow.Points.Add(p1);
+            this.Arrow.Points.Add(p2);
+            this.Arrow.Points.Add(p3);
+
+            
+        }
+        private void drawingHorizon()
+        {
+            Canvas canvas = this.Horizon_Canvas;
             horizon.X1 = 0;
             horizon.X2 = canvas.ActualWidth;
             if (Math.Abs(rotation) == 90)
@@ -109,12 +149,14 @@ namespace PrimatyFlightInterface
 
         private void Horizon_Canvas_Loaded(object sender, RoutedEventArgs e)
         {
-            drawingHorizon(this.Horizon_Canvas);
+            
             Horizon_Canvas.Children.Add(horizon);
             Horizon_Canvas.Children.Add(ground);
             horizon.Stroke = Brushes.White;
             horizon.StrokeThickness = 5;
             ground.Fill = new SolidColorBrush(Color.FromRgb(0x7d, 0x52, 0x33));
+
+            drawingHorizon();           
         }
 
         private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -131,7 +173,13 @@ namespace PrimatyFlightInterface
             {
                 this.rotation = 180 + (rotation + 180);
             }
-            drawingHorizon(this.Horizon_Canvas);
+            drawingHorizon();
+        }
+
+        private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            updateCanvasSize();
+            drawingHorizon();
         }
     }
 
