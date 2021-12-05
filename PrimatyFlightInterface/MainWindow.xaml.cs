@@ -22,7 +22,9 @@ namespace PrimatyFlightInterface
     {
         public double rotation = 0;
         private Line horizon = new Line();
-        private Polyline ground = new Polyline();
+        private Polygon ground = new Polygon();
+        private Polygon indicator = new Polygon();
+        private Line[] indicatorLines = new Line[11];
         private Point EdgeTL = new Point(0, 0);
         private Point EdgeTR = new Point(0, 0);
         private Point EdgeBL = new Point(0, 0);
@@ -32,7 +34,13 @@ namespace PrimatyFlightInterface
 
         public MainWindow()
         {
-            InitializeComponent();           
+            InitializeComponent();
+            for (int i = 0; i < indicatorLines.Length; i++)
+            {
+                indicatorLines[i] = new Line();
+                indicatorLines[i].Stroke = Brushes.White;
+                Horizon_Canvas.Children.Add(indicatorLines[i]);
+            }
         }
         private void updateEdges()
         {
@@ -66,29 +74,7 @@ namespace PrimatyFlightInterface
             {
                 this.Horizon_Canvas.Width = maxHeight;
                 this.Horizon_Canvas.Height = maxHeight;
-            }
-
-            this.DegArc.Width = this.Horizon_Canvas.Width * 0.75;
-            this.DegArc.Height = this.Horizon_Canvas.Height * 0.75;
-
-            double margin = (this.Horizon_Canvas.Width - this.DegArc.Width) / 2;
-            this.DegArc.Margin = new Thickness(margin, margin, 0, 0);
-            this.DegArcLine.X1 = this.Horizon_Canvas.Width / 2;
-            this.DegArcLine.X2 = this.Horizon_Canvas.Width / 2;
-            this.DegArcLine.Y1 = this.Horizon_Canvas.Height / 2;
-            this.DegArcLine.Y2 = (this.Horizon_Canvas.Height - (this.DegArc.Height)) / 4;
-            this.DegArcLineSmall.Y2 = this.DegArcLine.Y2 * 1.4;
-
-            Point p1 = new Point(this.Horizon_Canvas.Width * 0.25, this.Horizon_Canvas.Height/2);
-            Point p2 = new Point(this.Horizon_Canvas.Width / 2, this.Horizon_Canvas.Height / 8);
-            Point p3 = new Point(this.Horizon_Canvas.Width * 0.75, this.Horizon_Canvas.Height / 2);
-
-            this.Arrow.Points.Clear();
-            this.Arrow.Points.Add(p1);
-            this.Arrow.Points.Add(p2);
-            this.Arrow.Points.Add(p3);
-
-            
+            }           
         }
         private void drawingHorizon()
         {
@@ -147,25 +133,86 @@ namespace PrimatyFlightInterface
             ground.Points.Add(new Point(horizon.X1, horizon.Y1));
         }
 
+        private void drawingTurnIndicator()
+        {
+            if (this.Horizon_Canvas.Width != this.Horizon_Canvas.Height) throw new Exception("Canvas is not a square!");
+
+            int[] angels = { -70, -50, -30, -20, -10, 0, 10, 20, 30, 50, 70 };
+            bool[] bigIndicator = { true, false, true, false, false, true, false, false, true, false, true };
+            
+            double Xm = this.Horizon_Canvas.Width / 2;
+            double Ym = Xm;
+            int rotationalCorrection = -90;
+            double radiusStart = this.Horizon_Canvas.Width * 0.75 / 2;
+            double radiusEndBig = this.Horizon_Canvas.Width * 0.85 / 2;
+            double radiusEndSmall = this.Horizon_Canvas.Width * 0.8 / 2;
+
+            
+            for (int i = 0; i < angels.Length; i++)
+            {
+                double radius = bigIndicator[i] ? radiusEndBig : radiusEndSmall;
+                int thickness = bigIndicator[i] ? 4 : 2;
+                Line l = indicatorLines[i];
+                l.StrokeThickness = thickness;
+                l.X1 = radiusStart * Math.Cos(Math.PI / 180 * (angels[i]+rotationalCorrection)) + Xm;
+                l.Y1 = radiusStart * Math.Sin(Math.PI / 180 * (angels[i]+ rotationalCorrection)) + Ym;
+                l.X2 = radius * Math.Cos(Math.PI / 180 * (angels[i] + rotationalCorrection)) + Xm;
+                l.Y2 = radius * Math.Sin(Math.PI / 180 * (angels[i] + rotationalCorrection)) + Ym;                
+            }      
+        }
+
+        private void drawIndicator(double rotation)
+        {
+            double radiusStart = this.Horizon_Canvas.Width * 0.75 / 2;
+            int rotationalCorrection = -90;
+
+            double Xm = this.Horizon_Canvas.Width / 2;
+            double Ym = Xm;
+
+            double height = this.Horizon_Canvas.Height / 30;         
+
+            double x0 = radiusStart         * Math.Cos(Math.PI / 180 * (rotation + rotationalCorrection)) + Xm;
+            double y0 = radiusStart         * Math.Sin(Math.PI / 180 * (rotation + rotationalCorrection)) + Ym;   
+            double x1 = (radiusStart-height)  * Math.Cos(Math.PI / 180 * (rotation + rotationalCorrection)) + Xm;
+            double y1 = (radiusStart-height)  * Math.Sin(Math.PI / 180 * (rotation + rotationalCorrection)) + Ym;
+
+            Vector v1 = new Vector(y0 - y1, -(x0 - x1));
+            Vector v1i = new Vector(-(y0 - y1), x0 - x1);
+
+            v1 = Vector.Divide(v1, 2);
+            v1i = Vector.Divide(v1i,2);
+            Point p1 = Vector.Add(v1, new Point(x1, y1));
+            Point p2 = Vector.Add(v1i, new Point(x1, y1));
+
+            indicator.Points.Clear();
+            indicator.Points.Add(new Point(x0, y0));
+            indicator.Points.Add(p1);
+            indicator.Points.Add(p2);
+        }
+
         private void Horizon_Canvas_Loaded(object sender, RoutedEventArgs e)
         {
             
             Horizon_Canvas.Children.Add(horizon);
             Horizon_Canvas.Children.Add(ground);
+            Horizon_Canvas.Children.Add(indicator);
+
+            indicator.Fill = Brushes.Red;
             horizon.Stroke = Brushes.White;
             horizon.StrokeThickness = 5;
             ground.Fill = new SolidColorBrush(Color.FromRgb(0x7d, 0x52, 0x33));
-
+             
+            drawingTurnIndicator();
+            drawIndicator(0);
             drawingHorizon();           
         }
 
         private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             this.rotation = e.NewValue;
-            
-            this.Arrow.RenderTransform = new RotateTransform(rotation);
-            
-            if(rotation > 180)
+            drawIndicator(rotation);
+
+            if (rotation > 180)
             {
                  this.rotation = -180 + (rotation - 180);
             }
@@ -179,6 +226,8 @@ namespace PrimatyFlightInterface
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             updateCanvasSize();
+            drawingTurnIndicator();
+            drawIndicator(this.rotation);
             drawingHorizon();
         }
     }
