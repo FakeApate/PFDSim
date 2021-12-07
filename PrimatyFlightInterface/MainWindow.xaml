@@ -3,11 +3,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:PrimatyFlightInterface"
         x:Class="PrimatyFlightInterface.MainWindow"
         mc:Ignorable="d"
         Title="MainWindow" Height="767" Width="1130" Background="Black" ResizeMode="CanResize" SizeChanged="Window_SizeChanged"
-    xmlns:System="clr-namespace:System;assembly=System.Runtime">
+        HorizontalAlignment="Center">
 
     <Grid x:Name="MainGrid" ShowGridLines="True">
         <Grid.ColumnDefinitions>
@@ -20,13 +19,12 @@
             <RowDefinition Height="0.2*"/>
         </Grid.RowDefinitions>
 
-        <Slider x:Name="slider" Grid.Column="2" HorizontalAlignment="Stretch"  VerticalAlignment="Stretch" Width="120" Orientation="Vertical" Minimum="-360" Maximum="360" ValueChanged="Slider_ValueChanged" IsSnapToTickEnabled="True"/>
+        <Slider x:Name="slider2"  Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Orientation="Vertical" Maximum="360" Minimum="-360" Margin="20,0,0,0" IsSnapToTickEnabled="True" ValueChanged="Slider2_ValueChanged"/>
+        <Label  Content="{Binding Value, ElementName=slider2}" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="White" FontSize="36"/>
+        
+        <Slider x:Name="slider" Grid.Column="2" HorizontalAlignment="Stretch"  VerticalAlignment="Stretch" Orientation="Vertical" Minimum="-360" Maximum="360" ValueChanged="Slider_ValueChanged" IsSnapToTickEnabled="True" Margin="20,0,0,0"/>
         <Label Grid.Column="2" Content="{Binding Value, ElementName=slider}" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="White" FontSize="36"/>
 
-        <Canvas  Grid.Column="1" x:Name="Horizon_Canvas" Loaded="Horizon_Canvas_Loaded" Background="#5b93c5" Width="400" Height="400" HorizontalAlignment="Center" VerticalAlignment="Center">
-        </Canvas>
-
-
-
+        <Canvas  Grid.Column="1" x:Name="Horizon_Canvas" Loaded="Horizon_Canvas_Loaded" Background="#5b93c5" Width="400" Height="400" HorizontalAlignment="Center" VerticalAlignment="Center"/>
     </Grid>
 </Window>

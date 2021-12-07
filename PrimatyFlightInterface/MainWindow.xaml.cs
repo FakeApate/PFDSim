@@ -20,47 +20,21 @@ namespace PrimatyFlightInterface
     /// </summary>
     public partial class MainWindow : Window
     {
-        public double rotation = 0;
-        private Line horizon = new Line();
-        private Polygon ground = new Polygon();
-        private Polygon indicator = new Polygon();
-        private Line[] indicatorLines = new Line[11];
-        private Point EdgeTL = new Point(0, 0);
-        private Point EdgeTR = new Point(0, 0);
-        private Point EdgeBL = new Point(0, 0);
-        private Point EdgeBR = new Point(0, 0);
-        private Dictionary<Vector, List<Point>> groundRotation;
+        public double rollRotation = 0;
+        public double pitchRotation = 0;
+        private readonly Line horizon = new();
+        private readonly Polygon ground = new();
+        private readonly Polygon indicator = new();
+        private readonly Line[] rollLines = new Line[11];
+        private readonly Canvas PitchIndicatorCanvas = new();
 
 
         public MainWindow()
         {
             InitializeComponent();
-            for (int i = 0; i < indicatorLines.Length; i++)
-            {
-                indicatorLines[i] = new Line();
-                indicatorLines[i].Stroke = Brushes.White;
-                Horizon_Canvas.Children.Add(indicatorLines[i]);
-            }
-        }
-        private void updateEdges()
-        {
-            EdgeTR.X = this.Horizon_Canvas.ActualWidth;
-            EdgeBL.Y = this.Horizon_Canvas.ActualHeight;
-            EdgeBR.X = this.Horizon_Canvas.ActualWidth;
-            EdgeBR.Y = this.Horizon_Canvas.ActualHeight;
-
-            groundRotation = new Dictionary<Vector, List<Point>> {
-                { new Vector(45,90),        new List<Point>{ EdgeTL, EdgeBL } },
-                { new Vector(91,134),       new List<Point>{ EdgeBL, EdgeTL } },
-                { new Vector(-90,-45),      new List<Point>{ EdgeBR, EdgeTR } },
-                { new Vector(-134,-91),     new List<Point>{ EdgeTR, EdgeBR } },
-                { new Vector(135,180),      new List<Point>{ EdgeTL, EdgeTR } },
-                { new Vector(-180,-135),    new List<Point>{ EdgeTL, EdgeTR } },
-                { new Vector(-44,44),       new List<Point>{ EdgeBL, EdgeBR } },
-            };
         }
 
-        private void updateCanvasSize()
+        private void UpdateCanvasSize()
         {
             double maxWidth  = this.MainGrid.ColumnDefinitions[1].ActualWidth;
             double maxHeight = this.MainGrid.RowDefinitions[0].ActualHeight;
@@ -76,64 +50,136 @@ namespace PrimatyFlightInterface
                 this.Horizon_Canvas.Height = maxHeight;
             }           
         }
-        private void drawingHorizon()
+        private void DrawHorizon()
         {
             Canvas canvas = this.Horizon_Canvas;
             horizon.X1 = 0;
             horizon.X2 = canvas.ActualWidth;
-            if (Math.Abs(rotation) == 90)
+            double sizeMultiplier = this.Horizon_Canvas.Width;
+
+            Point pM = new(canvas.ActualWidth / 2, canvas.ActualHeight / 2);
+            pM.Y = Math.Tan(Math.PI / 180 * (this.pitchRotation)) * sizeMultiplier + pM.Y;
+
+            if (Math.Abs(rollRotation) == 90)
             {
-                horizon.X1 = canvas.ActualWidth / 2;
-                horizon.X2 = canvas.ActualWidth / 2;
-                horizon.Y1 = rotation == 90 ? 0: canvas.ActualHeight;
-                horizon.Y2 = rotation == 90 ? canvas.ActualHeight : 0;
+                horizon.X1 = pM.X;
+                horizon.X2 = pM.X;
+                horizon.Y1 = rollRotation == 90 ? 0: canvas.ActualHeight;
+                horizon.Y2 = rollRotation == 90 ? canvas.ActualHeight : 0;
             }
-            else if( Math.Abs(rotation) == 180)
+            else if( Math.Abs(rollRotation) == 180)
             {
                 horizon.X1 = 0;
                 horizon.X2 = canvas.ActualWidth;
-                horizon.Y1 = canvas.ActualHeight / 2;
-                horizon.Y2 = canvas.ActualHeight / 2;
+                horizon.Y1 = pM.Y;
+                horizon.Y2 = pM.Y;
             }
             else
             {
-                double radiant = (Math.PI / 180) * rotation;
-                horizon.Y1 = Math.Tan(radiant * -1) * (canvas.ActualWidth / 2) + (canvas.ActualHeight / 2);
-                horizon.Y2 = Math.Tan(radiant) * (canvas.ActualWidth / 2) + (canvas.ActualHeight / 2);
+                double radiant = (Math.PI / 180) * rollRotation;
+                horizon.Y1 = Math.Tan(radiant * -1) * (pM.X) + (pM.Y);
+                horizon.Y2 = Math.Tan(radiant) * (pM.X) + (pM.Y);
                 if (horizon.Y1 < 0)
                 {
                     double overflow = horizon.Y1;
                     horizon.Y1 = 0;
-                    horizon.X1 = overflow / Math.Tan(radiant * -1);
+                    var x = overflow / Math.Tan(radiant * -1);
+                    horizon.X1 = x > canvas.ActualWidth ? 0 : x;
                 }
                 else if (horizon.Y1 > canvas.ActualHeight)
                 {
                     double overflow = horizon.Y1 - canvas.ActualHeight;
                     horizon.Y1 = canvas.ActualHeight;
-                    horizon.X1 = overflow / Math.Tan(radiant * -1);
+                    var x = overflow / Math.Tan(radiant * -1);
+                    horizon.X1 = x < canvas.ActualWidth ? 0 : x;
                 }
                 if (horizon.Y2 < 0)
                 {
                     double overflow = horizon.Y2;
                     horizon.Y2 = 0;
-                    horizon.X2 = canvas.ActualWidth - overflow / Math.Tan(radiant);
+                    var x = canvas.ActualWidth - overflow / Math.Tan(radiant);
+                    horizon.X2 = x > canvas.ActualWidth ? 0 : x;
                 }
                 else if (horizon.Y2 > canvas.ActualHeight)
                 {
                     double overflow = horizon.Y2 - canvas.ActualHeight;
                     horizon.Y2 = canvas.ActualHeight;
-                    horizon.X2 = canvas.ActualWidth - overflow / Math.Tan(radiant);
+                    var x = canvas.ActualWidth - overflow / Math.Tan(radiant);
+                    horizon.X2 = x < canvas.ActualWidth ? 0 : x;
                 }
             }
 
-            updateEdges();
-            ground.Points.Clear();            
-            groundRotation[groundRotation.Keys.Single(x => rotation >= x.X && rotation <= x.Y)].ForEach(e => ground.Points.Add(e));
-            ground.Points.Add(new Point(horizon.X2, horizon.Y2));
-            ground.Points.Add(new Point(horizon.X1, horizon.Y1));
+            updateGround(new(horizon.X1,horizon.Y1), new(horizon.X2, horizon.Y2));                                            
         }
+         private void updateGround(Point l1, Point l2)
+        {
 
-        private void drawingTurnIndicator()
+            Point p1 = new(0, 0);
+            Point p2 = new(this.Horizon_Canvas.ActualWidth, 0);
+            Point p3 = new(0, this.Horizon_Canvas.ActualHeight);
+            Point p4 = new(this.Horizon_Canvas.ActualWidth, this.Horizon_Canvas.ActualHeight);
+
+            if(l1 == l2)
+            {
+                if(l1 == p1)
+                {
+                    ground.Points.Clear();
+                    ground.Points.Add(p1);
+                    ground.Points.Add(p3);
+                    ground.Points.Add(p4);
+                    ground.Points.Add(p2);
+                    return;
+                }
+                else if( l1 == p4)
+                {
+                    ground.Points.Clear();
+                    return;
+                }
+            }
+            
+            if(Math.Abs(this.rollRotation) > 90)
+            {
+                Point tmp = l1;
+                l1 = l2;
+                l2 = tmp;
+            }
+            List<Point> points = new List<Point>();
+
+
+            points.Add(p1);
+            if (checkPointIntecept(l1, p1, p3)) points.Add(l1);
+            if (checkPointIntecept(l2, p1, p3)) points.Add(l2);
+            points.Add(p3);
+            if (checkPointIntecept(l1, p3, p4)) points.Add(l1);
+            if (checkPointIntecept(l2, p3, p4)) points.Add(l2);
+            points.Add(p4);
+            if (checkPointIntecept(l1, p4, p2)) points.Add(l1);
+            if (checkPointIntecept(l2, p4, p2)) points.Add(l2);
+            points.Add(p2);
+            if (checkPointIntecept(l1, p2, p1)) points.Add(l1);
+            if (checkPointIntecept(l2, p2, p1)) points.Add(l2);
+
+            var result = points.FindIndex(x => x == l1);
+            
+            for (int i = 0; i < result; i++)
+            {
+                Point tmp = points[0];
+                points.RemoveAt(0);
+                points.Add(tmp);
+            }
+            result = points.FindIndex(x => x == l2)+1;
+            points.RemoveRange(result, points.Count-result);
+
+            ground.Points.Clear();
+            ground.Points = new PointCollection(points);
+        }
+        private bool checkPointIntecept(Point pC, Point p1, Point p2)
+        {
+            Vector cross = new(pC.X - p1.X, pC.Y - p1.Y);
+            Vector line = new(p2.X - p1.X, p2.Y - p1.Y);
+            return cross.X * line.Y - cross.Y * line.X == 0;
+        }
+        private void DrawRollIndicatorLines()
         {
             if (this.Horizon_Canvas.Width != this.Horizon_Canvas.Height) throw new Exception("Canvas is not a square!");
 
@@ -152,7 +198,18 @@ namespace PrimatyFlightInterface
             {
                 double radius = bigIndicator[i] ? radiusEndBig : radiusEndSmall;
                 int thickness = bigIndicator[i] ? 4 : 2;
-                Line l = indicatorLines[i];
+                Line l;
+                if (rollLines[i] != null) l = rollLines[i];
+                else
+                {
+                    l = new Line
+                    {
+                        Stroke = Brushes.White
+                    };
+                    Panel.SetZIndex(l, 1);
+                    rollLines[i] = l;
+                    Horizon_Canvas.Children.Add(l);
+                }
                 l.StrokeThickness = thickness;
                 l.X1 = radiusStart * Math.Cos(Math.PI / 180 * (angels[i]+rotationalCorrection)) + Xm;
                 l.Y1 = radiusStart * Math.Sin(Math.PI / 180 * (angels[i]+ rotationalCorrection)) + Ym;
@@ -161,8 +218,9 @@ namespace PrimatyFlightInterface
             }      
         }
 
-        private void drawIndicator(double rotation)
+        private void DrawRollIndicator()
         {
+            double rotation = this.rollRotation;
             double radiusStart = this.Horizon_Canvas.Width * 0.75 / 2;
             int rotationalCorrection = -90;
 
@@ -190,9 +248,98 @@ namespace PrimatyFlightInterface
             indicator.Points.Add(p2);
         }
 
+        private void DrawPitchIndicatorLines()
+        {
+            
+            double step = 2.5;
+            double minAngle = -20-10;
+            double maxAngle = 20+10;
+            double sizeMultiplier = this.Horizon_Canvas.Width;
+            double smallLength = this.Horizon_Canvas.Width * 0.07;
+            double mediumLength = this.Horizon_Canvas.Width * 0.15;
+            double largeLength = this.Horizon_Canvas.Width * 0.3;
+            double length;
+            int indicatorThickness = 2;
+            
+            List<Double> angels = new();
+
+            for(double i = minAngle; i<= maxAngle; i += step)
+            {
+                angels.Add(i);
+            }
+
+            Point pM = new(this.Horizon_Canvas.Width / 2, this.Horizon_Canvas.Height / 2);
+
+            //Create Pitch Region
+            double yBot = Math.Tan(Math.PI / 180 * (-20 * -1)) * sizeMultiplier + pM.Y - indicatorThickness;
+            double yTop = Math.Tan(Math.PI / 180 * (20 * -1)) * sizeMultiplier + pM.Y + indicatorThickness;
+            double x1 = pM.X - largeLength / 2;
+            double x2 = pM.X + largeLength / 2;
+            PitchIndicatorCanvas.Width = x2 - x1;
+            PitchIndicatorCanvas.Height = yBot - yTop;
+            PitchIndicatorCanvas.Margin = new Thickness(x1, yTop, 0, 0);
+            PitchIndicatorCanvas.Background = Brushes.Transparent;
+            PitchIndicatorCanvas.RenderTransformOrigin = pM;
+            
+
+
+            pM = new(PitchIndicatorCanvas.Width / 2, PitchIndicatorCanvas.Height / 2);
+            PitchIndicatorCanvas.Children.Clear();
+            double pitchCorrection = 0;
+
+            if (this.pitchRotation > 10 || this.pitchRotation < -10)
+            {
+                pitchCorrection = (int)(this.pitchRotation / 10)*-10;
+            }
+
+            RotateTransform rotate = new RotateTransform
+            {
+                Angle = rollRotation,
+                CenterX = pM.X,
+                CenterY = pM.Y
+            };
+
+            foreach (var angle in angels)
+            {
+               
+                if(angle % 1 != 0)
+                {
+                    length = smallLength;
+                }
+                else if (angle % 10 != 0)
+                {
+                    length = mediumLength;
+                }
+                else
+                {
+                    length = largeLength;
+                }
+
+                double y1Offset = Math.Tan(Math.PI / 180 * ((angle*-1) + this.pitchRotation + pitchCorrection)) * sizeMultiplier + pM.Y;
+                double y2Offset = y1Offset;
+                double x1Offset = pM.X - length / 2;
+                double x2Offset = pM.X + length / 2;
+                if (y1Offset >= 0 && y1Offset <= PitchIndicatorCanvas.Height)
+                {
+                    Line l = new Line
+                    {
+                        X1 = x1Offset,
+                        X2 = x2Offset,
+                        Y1 = y1Offset,
+                        Y2 = y2Offset,
+                        Stroke = Brushes.White,
+                        StrokeThickness = indicatorThickness,
+                        RenderTransform = rotate
+                    };                                       
+                    PitchIndicatorCanvas.Children.Add(l);
+                }                
+            }
+        }
+
         private void Horizon_Canvas_Loaded(object sender, RoutedEventArgs e)
         {
             
+            Horizon_Canvas.Children.Add(PitchIndicatorCanvas);
             Horizon_Canvas.Children.Add(horizon);
             Horizon_Canvas.Children.Add(ground);
             Horizon_Canvas.Children.Add(indicator);
@@ -201,34 +348,57 @@ namespace PrimatyFlightInterface
             horizon.Stroke = Brushes.White;
             horizon.StrokeThickness = 5;
             ground.Fill = new SolidColorBrush(Color.FromRgb(0x7d, 0x52, 0x33));
-             
-            drawingTurnIndicator();
-            drawIndicator(0);
-            drawingHorizon();           
+
+            Panel.SetZIndex(ground, 0);
+            Panel.SetZIndex(PitchIndicatorCanvas, 1);
+            
+
+            DrawPitchIndicatorLines();
+            DrawRollIndicatorLines();
+            DrawRollIndicator();
+            DrawHorizon(); 
         }
 
         private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            this.rotation = e.NewValue;
-            drawIndicator(rotation);
+            this.rollRotation = e.NewValue;
+            DrawRollIndicator();
 
-            if (rotation > 180)
+            if (rollRotation > 180)
             {
-                 this.rotation = -180 + (rotation - 180);
+                 this.rollRotation = -180 + (rollRotation - 180);
             }
-            if (rotation < -180)
+            if (rollRotation < -180)
             {
-                this.rotation = 180 + (rotation + 180);
+                this.rollRotation = 180 + (rollRotation + 180);
             }
-            drawingHorizon();
+            DrawPitchIndicatorLines();
+            DrawHorizon();
         }
 
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            updateCanvasSize();
-            drawingTurnIndicator();
-            drawIndicator(this.rotation);
-            drawingHorizon();
+            UpdateCanvasSize();
+            DrawPitchIndicatorLines();
+            DrawRollIndicatorLines();
+            DrawRollIndicator();
+            DrawHorizon();
+        }
+
+        private void Slider2_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            this.pitchRotation = e.NewValue;
+
+            if (pitchRotation > 180)
+            {
+                pitchRotation = -180 + (pitchRotation - 180);
+            }
+            if (pitchRotation < -180)
+            {
+                pitchRotation = 180 + (pitchRotation + 180);
+            }
+            DrawPitchIndicatorLines();
+            DrawHorizon();
         }
     }
 
