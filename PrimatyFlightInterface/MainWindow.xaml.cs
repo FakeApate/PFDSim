@@ -59,57 +59,38 @@ namespace PrimatyFlightInterface
 
             Point pM = new(canvas.ActualWidth / 2, canvas.ActualHeight / 2);
             pM.Y = Math.Tan(Math.PI / 180 * (this.pitchRotation)) * sizeMultiplier + pM.Y;
-
-            if (Math.Abs(rollRotation) == 90)
+            double radiant = (Math.PI / 180) * rollRotation;
+            horizon.Y1 = Math.Tan(radiant * -1) * (pM.X) + (pM.Y);
+            horizon.Y2 = Math.Tan(radiant) * (pM.X) + (pM.Y);
+            if (horizon.Y1 < 0)
             {
-                horizon.X1 = pM.X;
-                horizon.X2 = pM.X;
-                horizon.Y1 = rollRotation == 90 ? 0: canvas.ActualHeight;
-                horizon.Y2 = rollRotation == 90 ? canvas.ActualHeight : 0;
+                double overflow = horizon.Y1;
+                horizon.Y1 = 0;
+                var x = overflow / Math.Tan(radiant * -1);
+                horizon.X1 = x > canvas.ActualWidth ? 0 : x;
             }
-            else if( Math.Abs(rollRotation) == 180)
+            else if (horizon.Y1 > canvas.ActualHeight)
             {
-                horizon.X1 = 0;
-                horizon.X2 = canvas.ActualWidth;
-                horizon.Y1 = pM.Y;
-                horizon.Y2 = pM.Y;
+                double overflow = horizon.Y1 - canvas.ActualHeight;
+                horizon.Y1 = canvas.ActualHeight;
+                var x = overflow / Math.Tan(radiant * -1);
+                horizon.X1 = x < 0 ? 0 : x;
             }
-            else
+            if (horizon.Y2 < 0)
             {
-                double radiant = (Math.PI / 180) * rollRotation;
-                horizon.Y1 = Math.Tan(radiant * -1) * (pM.X) + (pM.Y);
-                horizon.Y2 = Math.Tan(radiant) * (pM.X) + (pM.Y);
-                if (horizon.Y1 < 0)
-                {
-                    double overflow = horizon.Y1;
-                    horizon.Y1 = 0;
-                    var x = overflow / Math.Tan(radiant * -1);
-                    horizon.X1 = x > canvas.ActualWidth ? 0 : x;
-                }
-                else if (horizon.Y1 > canvas.ActualHeight)
-                {
-                    double overflow = horizon.Y1 - canvas.ActualHeight;
-                    horizon.Y1 = canvas.ActualHeight;
-                    var x = overflow / Math.Tan(radiant * -1);
-                    horizon.X1 = x < canvas.ActualWidth ? 0 : x;
-                }
-                if (horizon.Y2 < 0)
-                {
-                    double overflow = horizon.Y2;
-                    horizon.Y2 = 0;
-                    var x = canvas.ActualWidth - overflow / Math.Tan(radiant);
-                    horizon.X2 = x > canvas.ActualWidth ? 0 : x;
-                }
-                else if (horizon.Y2 > canvas.ActualHeight)
-                {
-                    double overflow = horizon.Y2 - canvas.ActualHeight;
-                    horizon.Y2 = canvas.ActualHeight;
-                    var x = canvas.ActualWidth - overflow / Math.Tan(radiant);
-                    horizon.X2 = x < canvas.ActualWidth ? 0 : x;
-                }
+                double overflow = horizon.Y2;
+                horizon.Y2 = 0;
+                var x = canvas.ActualWidth - overflow / Math.Tan(radiant);
+                horizon.X2 = x > canvas.ActualWidth ? 0 : x;
             }
-
-            updateGround(new(horizon.X1,horizon.Y1), new(horizon.X2, horizon.Y2));                                            
+            else if (horizon.Y2 > canvas.ActualHeight)
+            {
+                double overflow = horizon.Y2 - canvas.ActualHeight;
+                horizon.Y2 = canvas.ActualHeight;
+                var x = canvas.ActualWidth - overflow / Math.Tan(radiant);
+                horizon.X2 = x < 0 ? 0 : x;
+            }
+            updateGround(new(horizon.X1, horizon.Y1), new(horizon.X2, horizon.Y2));
         }
          private void updateGround(Point l1, Point l2)
         {
@@ -121,7 +102,7 @@ namespace PrimatyFlightInterface
 
             if(l1 == l2)
             {
-                if(l1 == p1)
+                if(l1 == p1 || l1==p2 )
                 {
                     ground.Points.Clear();
                     ground.Points.Add(p1);
@@ -130,14 +111,14 @@ namespace PrimatyFlightInterface
                     ground.Points.Add(p2);
                     return;
                 }
-                else if( l1 == p4)
+                else if( l1 == p4 || l1 == p3)
                 {
                     ground.Points.Clear();
                     return;
                 }
             }
             
-            if(Math.Abs(this.rollRotation) > 90)
+            if(Math.Abs(this.rollRotation) > 90 && Math.Abs(this.rollRotation) <= 270)
             {
                 Point tmp = l1;
                 l1 = l2;
@@ -180,9 +161,7 @@ namespace PrimatyFlightInterface
             return cross.X * line.Y - cross.Y * line.X == 0;
         }
         private void DrawRollIndicatorLines()
-        {
-            if (this.Horizon_Canvas.Width != this.Horizon_Canvas.Height) throw new Exception("Canvas is not a square!");
-
+        {          
             int[] angels = { -70, -50, -30, -20, -10, 0, 10, 20, 30, 50, 70 };
             bool[] bigIndicator = { true, false, true, false, false, true, false, false, true, false, true };
             
@@ -364,14 +343,14 @@ namespace PrimatyFlightInterface
             this.rollRotation = e.NewValue;
             DrawRollIndicator();
 
-            if (rollRotation > 180)
+           /* if (rollRotation > 180)
             {
                  this.rollRotation = -180 + (rollRotation - 180);
             }
             if (rollRotation < -180)
             {
                 this.rollRotation = 180 + (rollRotation + 180);
-            }
+            }*/
             DrawPitchIndicatorLines();
             DrawHorizon();
         }
@@ -389,14 +368,14 @@ namespace PrimatyFlightInterface
         {
             this.pitchRotation = e.NewValue;
 
-            if (pitchRotation > 180)
+            /*if (pitchRotation > 180)
             {
                 pitchRotation = -180 + (pitchRotation - 180);
             }
             if (pitchRotation < -180)
             {
                 pitchRotation = 180 + (pitchRotation + 180);
-            }
+            }*/
             DrawPitchIndicatorLines();
             DrawHorizon();
         }
